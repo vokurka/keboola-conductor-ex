@@ -55,17 +55,47 @@ class Conductor
 
   public function run()
   {
-    $this->logMessage('Downloading Rank Sources.');
+    $this->logMessage('Downloading Locations.');
+    $locations = $this->makeRequest('locations');
+    $this->createCsv($locations,'locations');
+    
+    $this->logMessage('Downloading Devices.');
+    $devices = $this->makeRequest('devices');
+    $this->createCsv($devices,'devices');
+
+    $this->logMessage('Downloading Accounts, Web Properties, Ranked Searches.');
+    $accounts = $this->makeRequest('accounts');
+    $this->createCsv($accounts,'accounts');
+
+    $this->logMessage('Downloading Rank Sources and Rank Reports.');
     $rankSources = $this->makeRequest('rank-sources');
     $this->createCsv($rankSources,'rank_sources');
 
-    $this->logMessage('Downloading Locations.');
-    $rankSources = $this->makeRequest('locations');
-    $this->createCsv($rankSources,'locations');
-    
-    $this->logMessage('Downloading Devices.');
-    $rankSources = $this->makeRequest('devices');
-    $this->createCsv($rankSources,'devices');
+    $webPropertiesData = array();
+    $rankedSearchesData = array();
+    $rankReportsData = array();
+
+    foreach ($accounts as $account)
+    {
+      $webProperties = $this->makeRequest('accounts/'.$account->accountId.'/web-properties');
+      $webPropertiesData = array_merge($webPropertiesData, $webProperties);
+
+      foreach ($webProperties as $webProperty)
+      {
+        $rankedSearches = $this->makeRequest('accounts/'.$account->accountId.'/web-properties/'.$webProperty->webPropertyId.'/tracked-searches');
+        $rankedSearchesData = array_merge($rankedSearchesData, $rankedSearches);
+
+        foreach ($rankSources as $rankSource)
+        {
+          $rankReports = $this->makeRequest($account->accountId.'/web-properties/'.$webProperty->webPropertyId.'/rank-sources/'.$rankSource->rankSourceId.'/tp/CURRENT/serp-items');
+          $rankReportsData = array_merge($rankReportsData, $rankReportsData);
+        }
+      }
+    }
+
+    $this->createCsv($webPropertiesData,'web_properties');
+    $this->createCsv($rankedSearchesData,'ranked_searches');
+    $this->createCsv($rankReportsData,'rank_reports');
 
     $this->logMessage('Done.');
   }
