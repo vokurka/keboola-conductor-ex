@@ -6,13 +6,7 @@ Here is an example of configuration:
 
 ```
 {
-  "bucket": "in.c-ex-zuora-main",
-
-  "username": "<your_username>",
-  "#password": "<your_password>",
+  "apiKey": "<your_apikey>",
+  "#sharedSecret": "<your_sharedSecret>",
 }
 ```
-
-* bucket - destination bucket for downloaded data
-* username - username of account you are using to access Zuora
-* password - password of account you are using to access Zuora
