@@ -41,7 +41,6 @@ class Conductor
         ),
         'parameters' => array(
           'apiKey' => $this->config['apiKey'],
-          'sig' => md5($this->config['apiKey'].$this->config['#sharedSecret'].time()),
         ),
     ));
 
@@ -117,7 +116,7 @@ class Conductor
 
     try
     {
-      $result = $this->api->get($url);
+      $result = $this->api->get($url, array('sig' => md5($this->config['apiKey'].$this->config['#sharedSecret'].time())));
       $parsedResult = $result->decode_response();
     }
     catch (Exception $e)
@@ -129,7 +128,7 @@ class Conductor
 
       try
       {
-        $result = $this->api->get($url);
+        $result = $this->api->get($url, array('sig' => md5($this->config['apiKey'].$this->config['#sharedSecret'].time())));
         $parsedResult = $result->decode_response();
       }
       catch (Exception $e)
