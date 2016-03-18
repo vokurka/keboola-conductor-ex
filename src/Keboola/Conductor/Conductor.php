@@ -122,9 +122,22 @@ class Conductor
     }
     catch (Exception $e)
     {
-      print_r($result->response);
       print_r($e);
-      exit;
+      print_r($result->response);
+      
+      echo "Trying for a second time.\n";
+
+      try
+      {
+        $result = $this->api->get($url);
+        $parsedResult = $result->decode_response();
+      }
+      catch (Exception $e)
+      {
+        print_r($e);
+        print_r($result->response);
+        exit;
+      }
     }
 
     $this->lastRequest = time();
