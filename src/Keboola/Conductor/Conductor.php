@@ -1,5 +1,7 @@
 <?php
 
+use Keboola\Json\Parser;
+
 class Conductor
 {
   private $api;
@@ -41,7 +43,7 @@ class Conductor
     ));
 
     $this->api->register_decoder('json', 
-    create_function('$a', "return json_decode(\$a, TRUE);"));
+    create_function('$a', "return json_decode(\$a);"));
 
     $this->parser = Parser::create(new \Monolog\Logger('json-parser'));
   }
@@ -54,10 +56,16 @@ class Conductor
   public function run()
   {
     $this->logMessage('Downloading Rank Sources.');
-
     $rankSources = $this->makeRequest('rank-sources');
+    $this->createCsv($rankSources,'rank_sources');
 
-    $this->createCsv($rankSources);
+    $this->logMessage('Downloading Locations.');
+    $rankSources = $this->makeRequest('locations');
+    $this->createCsv($rankSources,'locations');
+    
+    $this->logMessage('Downloading Devices.');
+    $rankSources = $this->makeRequest('devices');
+    $this->createCsv($rankSources,'devices');
 
     $this->logMessage('Done.');
   }
@@ -80,11 +88,11 @@ class Conductor
   private function createCsv($json, $name)
   {
     $this->parser->process($json, $name);
-    $result = $parser->getCsvFiles();
+    $result = $this->parser->getCsvFiles();
 
     foreach ($result as $file)
     {
-      copy($file->getPathName(), $this->destination.substr($file->getFileName(), strpos($file->getFileName(), '-')+1).'.csv');
+      copy($file->getPathName(), $this->destination.substr($file->getFileName(), strpos($file->getFileName(), '-')+1));
     }
   }
 }
