@@ -5,7 +5,6 @@ use Keboola\Json\Parser;
 class Conductor
 {
   private $api;
-  private $parser;
   private $config;
   private $destination;
   private $lastRequest = 0;
@@ -48,8 +47,6 @@ class Conductor
 
     $this->api->register_decoder('json', 
     create_function('$a', "return json_decode(\$a);"));
-
-    $this->parser = Parser::create(new \Monolog\Logger('json-parser'));
   }
 
   private function logMessage($message)
@@ -137,6 +134,8 @@ class Conductor
 
   private function createCsv($json, $name)
   {
+    $parser = Parser::create(new \Monolog\Logger('json-parser'));
+
     if (!empty($this->config['debug']))
     {
       echo "json: ".$name."\n";
@@ -144,8 +143,8 @@ class Conductor
 
     try
     {
-      $this->parser->process($json, $name);
-      $result = $this->parser->getCsvFiles();
+      $parser->process($json, $name);
+      $result = $parser->getCsvFiles();
     }
     catch (Exception $e)
     {
@@ -158,5 +157,7 @@ class Conductor
     {
       copy($file->getPathName(), $this->destination.substr($file->getFileName(), strpos($file->getFileName(), '-')+1));
     }
+
+    unset($parser);
   }
 }
