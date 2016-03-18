@@ -30,7 +30,11 @@ class Conductor
       $this->config[$c] = $config[$c];
     }
 
-    // API initialization
+    if (!empty($config['debug']))
+    {
+      $this->config['debug'] = true;
+    }
+
     $this->api = new RestClient(array(
         'base_url' => "https://api.conductor.com/v3/", 
         'headers' => array(
@@ -63,13 +67,13 @@ class Conductor
     $devices = $this->makeRequest('devices');
     $this->createCsv($devices,'devices');
 
-    $this->logMessage('Downloading Accounts, Web Properties, Ranked Searches.');
-    $accounts = $this->makeRequest('accounts');
-    $this->createCsv($accounts,'accounts');
-
-    $this->logMessage('Downloading Rank Sources and Rank Reports.');
+    $this->logMessage('Downloading Rank Sources.');
     $rankSources = $this->makeRequest('rank-sources');
     $this->createCsv($rankSources,'rank_sources');
+
+    $this->logMessage('Downloading Accounts, Web Properties, Ranked Searches and Rank Reports.');
+    $accounts = $this->makeRequest('accounts');
+    $this->createCsv($accounts,'accounts');
 
     $webPropertiesData = array();
     $rankedSearchesData = array();
@@ -88,7 +92,7 @@ class Conductor
         foreach ($rankSources as $rankSource)
         {
           $rankReports = $this->makeRequest($account->accountId.'/web-properties/'.$webProperty->webPropertyId.'/rank-sources/'.$rankSource->rankSourceId.'/tp/CURRENT/serp-items');
-          $rankReportsData = array_merge($rankReportsData, $rankReportsData);
+          $rankReportsData = array_merge($rankReportsData, $rankReports);
         }
       }
     }
@@ -102,23 +106,53 @@ class Conductor
 
   private function makeRequest($url)
   {
-    if ($this->lastRequest == time())
+    if ($this->lastRequest+1 == time())
     {
       sleep(1);
     }
 
-    $result = $this->api->get($url);
-    $result = $result->decode_response();
+    if (!empty($this->config['debug']))
+    {
+      echo "endpoint: ";
+      print_r($url);
+      echo "\n";
+    }
+
+    try
+    {
+      $result = $this->api->get($url);
+      $parsedResult = $result->decode_response();
+    }
+    catch (Exception $e)
+    {
+      print_r($result->response);
+      print_r($e);
+      exit;
+    }
 
     $this->lastRequest = time();
 
-    return $result;
+    return $parsedResult;
   }
 
   private function createCsv($json, $name)
   {
-    $this->parser->process($json, $name);
-    $result = $this->parser->getCsvFiles();
+    if (!empty($this->config['debug']))
+    {
+      echo "json: ".$name."\n";
+    }
+
+    try
+    {
+      $this->parser->process($json, $name);
+      $result = $this->parser->getCsvFiles();
+    }
+    catch (Exception $e)
+    {
+      print_r($e);
+      print_r($json);
+      exit;
+    }
 
     foreach ($result as $file)
     {

@@ -8,5 +8,9 @@ Here is an example of configuration:
 {
   "apiKey": "<your_apikey>",
   "#sharedSecret": "<your_sharedSecret>",
+  "debug": 1
 }
 ```
+
+To apiKey and sharedSecret fields put your credentials from Conductor Application.
+To show endpoints queried and other details set "debug" option to 1.
