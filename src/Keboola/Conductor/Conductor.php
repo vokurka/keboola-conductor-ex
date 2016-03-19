@@ -104,7 +104,7 @@ class Conductor
   {
     if ($this->lastRequest+1 == time())
     {
-      sleep(1);
+      usleep(2000);
     }
 
     if (!empty($this->config['debug']))
@@ -118,6 +118,7 @@ class Conductor
     {
       $result = $this->api->get($url, array('sig' => md5($this->config['apiKey'].$this->config['#sharedSecret'].time())));
       $parsedResult = $result->decode_response();
+      $this->lastRequest = time();
     }
     catch (Exception $e)
     {
@@ -126,10 +127,16 @@ class Conductor
       
       echo "Trying for a second time.\n";
 
+      if ($this->lastRequest+1 == time())
+      {
+        usleep(2000);
+      }
+
       try
       {
         $result = $this->api->get($url, array('sig' => md5($this->config['apiKey'].$this->config['#sharedSecret'].time())));
         $parsedResult = $result->decode_response();
+        $this->lastRequest = time();
       }
       catch (Exception $e)
       {
@@ -138,8 +145,6 @@ class Conductor
         exit;
       }
     }
-
-    $this->lastRequest = time();
 
     return $parsedResult;
   }
