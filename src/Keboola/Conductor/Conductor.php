@@ -102,9 +102,10 @@ class Conductor
 
   private function makeRequest($url)
   {
+    // echo ($this->lastRequest+1)." >= ".time()."\n";
     if ($this->lastRequest+1 >= time())
     {
-      usleep(2000);
+      sleep(2);
     }
 
     if (!empty($this->config['debug']))
@@ -127,9 +128,10 @@ class Conductor
       
       echo "Trying for a second time.\n";
 
+      // echo ($this->lastRequest+1)." >= ".time()."\n";
       if ($this->lastRequest+1 >= time())
       {
-        usleep(2000);
+        sleep(2);
       }
 
       try
@@ -142,7 +144,7 @@ class Conductor
       {
         print_r($e);
         print_r($result->response);
-        exit;
+        exit(1);
       }
     }
 
@@ -167,7 +169,7 @@ class Conductor
     {
       print_r($e);
       print_r($json);
-      exit;
+      exit(1);
     }
 
     foreach ($result as $file)
