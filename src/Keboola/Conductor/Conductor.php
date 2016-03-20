@@ -102,7 +102,7 @@ class Conductor
 
   private function makeRequest($url)
   {
-    if ($this->lastRequest+1 == time())
+    if ($this->lastRequest+1 >= time())
     {
       usleep(2000);
     }
@@ -127,7 +127,7 @@ class Conductor
       
       echo "Trying for a second time.\n";
 
-      if ($this->lastRequest+1 == time())
+      if ($this->lastRequest+1 >= time())
       {
         usleep(2000);
       }
