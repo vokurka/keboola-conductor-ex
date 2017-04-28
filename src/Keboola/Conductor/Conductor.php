@@ -94,8 +94,13 @@ class Conductor
     }
 
     $this->createCsv($webPropertiesData,'web_properties');
+    unset($webPropertiesData);
+    
     $this->createCsv($rankedSearchesData,'ranked_searches');
+    unset($rankedSearchesData);
+
     $this->createCsv($rankReportsData,'rank_reports');
+    unset($rankReportsData);
 
     $this->logMessage('Done.');
   }
