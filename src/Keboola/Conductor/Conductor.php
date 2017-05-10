@@ -158,7 +158,9 @@ class Conductor
 
   private function createCsv($json, $name)
   {
-    $parser = Parser::create(new \Monolog\Logger('json-parser'));
+    $log = new \Monolog\Logger('json-parser');
+    $log->pushHandler(new \Monolog\Handler\StreamHandler('php://stdout'));
+    $parser = Parser::create($log);
 
     if (!empty($this->config['debug']))
     {
